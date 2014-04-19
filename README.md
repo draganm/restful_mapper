@@ -112,6 +112,9 @@ TBD
 ### Raising Exception
 TBD
 
+## Missing Features
+Logging
+
 ## Contributing
 
 1. Fork it ( http://github.com/<my-github-username>/restful_mapper/fork )
