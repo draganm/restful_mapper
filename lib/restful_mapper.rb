@@ -72,7 +72,7 @@ module RestfulMapper
       status_class=@response_mapping[status]
       status_class||=@response_mapping[0]
       body=response.body
-      result=deserialize body, status_class
+      result=deserialize body, response.headers['Content-Type'], status_class
       if Exception === result
         raise result
       end
@@ -88,15 +88,19 @@ module RestfulMapper
     end
 
 
-    def deserialize json, mapping
-      if json && !json.empty?
-        mapping.from_structure(MultiJson.load(json))
-      else
-        if Hash == mapping || Array == mapping || mapping.is_a?(Class)
-          mapping.new
+    def deserialize json, content_type, mapping
+      if content_type.start_with?('application/json')
+        if json && !json.empty?
+          mapping.from_structure(MultiJson.load(json))
         else
-          mapping
+          if Hash == mapping || Array == mapping || mapping.is_a?(Class)
+            mapping.new
+          else
+            mapping
+          end
         end
+      else
+        mapping.from_content(content_type, json)
       end
     end
 
