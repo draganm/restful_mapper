@@ -59,6 +59,7 @@ module RestfulMapper
           faraday.response :logger
         end
         faraday.adapter Faraday.default_adapter  # make requests with Net::HTTP
+        conn.use FaradayMiddleware::FollowRedirects, limit: 5
       end
 
       if has_basic_authentication?
