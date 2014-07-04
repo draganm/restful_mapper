@@ -4,7 +4,7 @@ require "restful_mapper/version"
 require 'structure_mapper'
 require 'multi_json'
 require 'mustache'
-
+require 'faraday_middleware'
 
 class Object # http://whytheluckystiff.net/articles/seeingMetaclassesClearly.html
   def meta_def name, &blk

@@ -27,6 +27,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "sinatra"
   spec.add_development_dependency "agent"
   spec.add_dependency "faraday"
+  spec.add_dependency "faraday_middleware"
   spec.add_dependency "multi_json"
   spec.add_dependency "structure_mapper"
   spec.add_dependency "mustache"
