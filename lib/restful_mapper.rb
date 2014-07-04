@@ -28,6 +28,10 @@ module RestfulMapper
       @path=path
     end
 
+    def verbose
+      @verbose=true
+    end
+
     def responses response_mapping={}
       @response_mapping=response_mapping
     end
@@ -50,7 +54,10 @@ module RestfulMapper
 
     def call_service params
       conn = Faraday.new(:url => @base_url) do |faraday|
-        # faraday.response :logger                  # log requests to STDOUT
+        if @verbose
+          faraday.response :logger
+          faraday.request :logger
+        end
         faraday.adapter Faraday.default_adapter  # make requests with Net::HTTP
       end
 
