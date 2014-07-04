@@ -17,11 +17,12 @@ module RestfulMapper
 
   class EndpointDefinition
 
-    def initialize base_url, method, basic_authentication
+    def initialize base_url, method, basic_authentication, token
       @base_url=base_url
       @query_parameters=[]
       @method=method
       @basic_authentication=basic_authentication
+      @token=token
     end
 
     def path path, options={}
@@ -64,15 +65,17 @@ module RestfulMapper
         conn.basic_auth(*basic_authentication_data(params))
       end
 
+      if has_token?
+        conn.authorization :Bearer, @token
+      end
+
+
       response=conn.run_request(@method, Mustache.render(@path, params), nil, {'Content-Type' => 'application/json'}) { |request|
         request.params.update(filter_parameters(params)) if filter_parameters(params)
         if @body_parameter
           request.body=MultiJson.dump(params[@body_parameter].to_structure)
         end
-
-
       }
-
 
       status=response.status
       status_class=@response_mapping[status]
@@ -87,6 +90,10 @@ module RestfulMapper
 
     def has_basic_authentication?
       @basic_authentication
+    end
+
+    def has_token?
+      @token
     end
 
     def basic_authentication_data params
@@ -149,10 +156,15 @@ module RestfulMapper
       @basic_authentication=[username,password]
     end
 
+    def self.bearer_authentication token
+      @token=token
+    end
+
+
     private
 
     def self.service_method name, definition, method
-      endpoint_definition=EndpointDefinition.new @base_url, method, @basic_authentication
+      endpoint_definition=EndpointDefinition.new @base_url, method, @basic_authentication, @token
       endpoint_definition.instance_exec(&definition)
       self.meta_def(name.to_sym) do |params={}|
         copy=(@default_parameters || {}).merge(params)
