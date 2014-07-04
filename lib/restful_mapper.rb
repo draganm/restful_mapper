@@ -55,10 +55,10 @@ module RestfulMapper
 
     def call_service params
       conn = Faraday.new(:url => @base_url) do |faraday|
+        faraday.use FaradayMiddleware::FollowRedirects, limit: 5
         if @verbose
           faraday.response :logger
         end
-        faraday.use FaradayMiddleware::FollowRedirects, limit: 5
         faraday.adapter Faraday.default_adapter  # make requests with Net::HTTP
       end
 
