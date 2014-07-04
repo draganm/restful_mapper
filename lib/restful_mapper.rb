@@ -56,7 +56,6 @@ module RestfulMapper
       conn = Faraday.new(:url => @base_url) do |faraday|
         if @verbose
           faraday.response :logger
-          faraday.request :logger
         end
         faraday.adapter Faraday.default_adapter  # make requests with Net::HTTP
       end
