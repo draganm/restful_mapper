@@ -54,7 +54,8 @@ module RestfulMapper
     end
 
     def call_service params
-      conn = Faraday.new(:url => @base_url) do |faraday|
+
+      conn = Faraday.new(url: Mustache.render(@base_url, params)) do |faraday|
         faraday.use FaradayMiddleware::FollowRedirects, limit: 5
         if @verbose
           faraday.response :logger
@@ -67,7 +68,7 @@ module RestfulMapper
       end
 
       if has_token?
-        conn.authorization :Bearer, @token
+        conn.authorization :Bearer, Mustache.render(@token, params)
       end
 
 
@@ -103,7 +104,10 @@ module RestfulMapper
 
 
     def deserialize json, content_type, mapping
-      if content_type.start_with?('application/json')
+      if mapping == true || mapping == false || Symbol === mapping
+        mapping
+
+      elsif content_type.start_with?('application/json')
         if json && !json.empty?
           mapping.from_structure(MultiJson.load(json))
         else
@@ -116,6 +120,7 @@ module RestfulMapper
       else
         mapping.from_content(content_type, json)
       end
+
     end
 
 
