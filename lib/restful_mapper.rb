@@ -13,6 +13,12 @@ class Object # http://whytheluckystiff.net/articles/seeingMetaclassesClearly.htm
 end
 
 
+class Exception
+  def self.from_content type, content_type, data
+
+  end
+end
+
 module RestfulMapper
 
   class EndpointDefinition
@@ -55,6 +61,8 @@ module RestfulMapper
 
     def call_service params
 
+      puts "base url: %s" % @base_url
+
       conn = Faraday.new(url: Mustache.render(@base_url, params)) do |faraday|
         faraday.use FaradayMiddleware::FollowRedirects, limit: 5
         if @verbose
@@ -71,8 +79,9 @@ module RestfulMapper
         conn.authorization :Bearer, Mustache.render(@token, params)
       end
 
+      path = Mustache.render(@path, params)
 
-      response=conn.run_request(@method, Mustache.render(@path, params), nil, {'Content-Type' => 'application/json'}) { |request|
+      response=conn.run_request(@method, path, nil, {'Content-Type' => 'application/json'}) { |request|
         request.params.update(filter_parameters(params)) if filter_parameters(params)
         if @body_parameter
           request.body=MultiJson.dump(params[@body_parameter].to_structure)
@@ -83,11 +92,7 @@ module RestfulMapper
       status_class=@response_mapping[status]
       status_class||=@response_mapping[0]
       body=response.body
-      result=deserialize body, response.headers['Content-Type'], status_class
-      if Exception === result
-        raise result
-      end
-      result
+      deserialize body, response.headers['Content-Type'], status_class
     end
 
     def has_basic_authentication?
@@ -102,12 +107,11 @@ module RestfulMapper
       @basic_authentication.map{|name| Symbol === name ? params[name] : name}
     end
 
-
     def deserialize json, content_type, mapping
-      if mapping == true || mapping == false || Symbol === mapping
-        mapping
-
-      elsif content_type.start_with?('application/json')
+      if mapping.is_a?(Class) && Exception >= mapping
+        raise mapping, json
+      end
+      if content_type && content_type.start_with?('application/json')
         if json && !json.empty?
           mapping.from_structure(MultiJson.load(json))
         else
@@ -117,8 +121,10 @@ module RestfulMapper
             mapping
           end
         end
-      else
+      elsif mapping.respond_to?(:from_content)
         mapping.from_content(content_type, json)
+      else
+        mapping
       end
 
     end
@@ -165,7 +171,6 @@ module RestfulMapper
     def self.bearer_authentication token
       @token=token
     end
-
 
     private
 

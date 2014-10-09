@@ -1,7 +1,6 @@
 Feature: Handling Non-Json Response
 
-
-  @wip
+@ok
   Scenario: mapping to false
   Given following service definition
     """
@@ -16,7 +15,7 @@ Feature: Handling Non-Json Response
 
       get :simple_endpoint do
         path "/simple"
-        
+
         responses 0 => false
       end
 
@@ -24,7 +23,7 @@ Feature: Handling Non-Json Response
     """
     And the service endpoint at port 8765 responds with following http response:
     """
-    HTTP/1.1 200 OK    
+    HTTP/1.1 200 OK
     Connection: close
     Content-Type: text/plain
 

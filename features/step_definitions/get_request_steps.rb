@@ -16,7 +16,7 @@ end
 
 
 When(/^I call service "(.*?)"$/) do |code|
-  @result=@module.module_eval code
+  @result=@module.module_eval(code, "input",1)
 end
 
 Then(/^the result should be equal to:$/) do |expected|
